@@ -14,6 +14,8 @@ export interface UserProfile {
 /** The person currently using the app, signed in or not. */
 export interface Viewer {
   isAuthenticated: boolean;
+  /** Account email when signed in, otherwise `null`. */
+  email: string | null;
   /** Name used for greetings. `null` when the person has not told us. */
   displayName: string | null;
 }

@@ -1,6 +1,7 @@
 import type { Viewer } from "@levelup/types";
 import Link from "next/link";
 
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Logo } from "@/components/layout/logo";
 import { ViewerAvatar } from "@/components/layout/viewer-avatar";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
@@ -30,12 +31,15 @@ export function Sidebar({ viewer }: { viewer: Viewer }) {
         <ThemeSwitcher compact className="px-1" />
         <div className="flex items-center gap-3 rounded-xl px-2 py-1.5">
           <ViewerAvatar name={viewer.displayName} />
-          <div className="min-w-0">
-            <p className="truncate text-label text-foreground">{viewer.displayName ?? "Guest"}</p>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-label text-foreground">
+              {viewer.displayName ?? (viewer.isAuthenticated ? "Your account" : "Guest")}
+            </p>
             <p className="truncate text-caption text-foreground-muted">
-              {viewer.isAuthenticated ? "Signed in" : "Not signed in"}
+              {viewer.isAuthenticated ? (viewer.email ?? "Signed in") : "Not signed in"}
             </p>
           </div>
+          {viewer.isAuthenticated ? <SignOutButton iconOnly /> : null}
         </div>
       </div>
     </aside>

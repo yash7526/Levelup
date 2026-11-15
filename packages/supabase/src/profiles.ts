@@ -33,3 +33,23 @@ export async function fetchProfile(
   if (error) throw new Error(`Failed to load profile: ${error.message}`);
   return data ? mapProfileRow(data) : null;
 }
+
+/**
+ * Updates the signed-in user's display name (`null` clears it). Row-level security
+ * only allows updating your own row. The row itself is created by a database trigger
+ * at sign-up, so a missing row means the account predates the profiles migration.
+ */
+export async function updateProfileDisplayName(
+  client: LevelUpSupabaseClient,
+  userId: string,
+  displayName: string | null,
+): Promise<void> {
+  const { data, error } = await client
+    .from("profiles")
+    .update({ display_name: displayName })
+    .eq("id", userId)
+    .select("id");
+
+  if (error) throw new Error(`Failed to update profile: ${error.message}`);
+  if (!data || data.length === 0) throw new Error("Profile not found for this account.");
+}

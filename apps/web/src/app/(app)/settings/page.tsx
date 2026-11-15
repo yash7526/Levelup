@@ -2,6 +2,7 @@ import { describeSupabaseProject } from "@levelup/supabase";
 import { ArrowRight, Database, Palette } from "lucide-react";
 import type { Metadata } from "next";
 
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { PreferredNameForm } from "@/components/settings/preferred-name-form";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
@@ -29,7 +30,10 @@ export default async function SettingsPage() {
               <CardDescription>How LevelUp greets you</CardDescription>
             </div>
           </CardHeader>
-          <PreferredNameForm currentName={viewer.displayName} />
+          <PreferredNameForm
+            currentName={viewer.displayName}
+            mode={viewer.isAuthenticated ? "account" : "device"}
+          />
         </Card>
 
         <Card
@@ -67,12 +71,13 @@ export default async function SettingsPage() {
               </dd>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <dt className="text-foreground-muted">Session</dt>
-              <dd className="text-foreground">
-                {viewer.isAuthenticated ? "Signed in" : "Not signed in"}
+              <dt className="text-foreground-muted">Signed in as</dt>
+              <dd className="min-w-0 truncate text-foreground">
+                {viewer.isAuthenticated ? (viewer.email ?? "Your account") : "Not signed in"}
               </dd>
             </div>
           </dl>
+          {viewer.isAuthenticated ? <SignOutButton className="mt-5" /> : null}
           {!supabase ? (
             <p className="mt-4 rounded-xl bg-surface-muted p-3 text-body-sm text-foreground-muted">
               Add <code className="font-mono text-foreground">NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
@@ -80,7 +85,7 @@ export default async function SettingsPage() {
                 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
               </code>{" "}
               to <code className="font-mono text-foreground">apps/web/.env.local</code>, then
-              restart the dev server. Sign-in arrives with the accounts milestone.
+              restart the dev server to enable accounts.
             </p>
           ) : null}
         </Card>

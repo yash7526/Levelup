@@ -4,13 +4,23 @@ import { DISPLAY_NAME_MAX_LENGTH } from "@levelup/utils";
 import { CircleCheck } from "lucide-react";
 import { useActionState } from "react";
 
-import { type PreferredNameState, updatePreferredName } from "@/app/(app)/settings/actions";
+import {
+  type PreferredNameState,
+  updateAccountName,
+  updatePreferredName,
+} from "@/app/(app)/settings/actions";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/input";
 
-export function PreferredNameForm({ currentName }: { currentName: string | null }) {
+interface PreferredNameFormProps {
+  currentName: string | null;
+  /** `account`: saved to the signed-in user's profile. `device`: no accounts, saved locally. */
+  mode: "account" | "device";
+}
+
+export function PreferredNameForm({ currentName, mode }: PreferredNameFormProps) {
   const [state, formAction, pending] = useActionState<PreferredNameState, FormData>(
-    updatePreferredName,
+    mode === "account" ? updateAccountName : updatePreferredName,
     { status: "idle" },
   );
 
@@ -23,12 +33,16 @@ export function PreferredNameForm({ currentName }: { currentName: string | null 
         key={`${state.status}:${value}`}
         id="preferred-name"
         name="preferredName"
-        label="Preferred name"
+        label="Your name"
         defaultValue={value}
         maxLength={DISPLAY_NAME_MAX_LENGTH}
         autoComplete="given-name"
         placeholder="e.g. Sam"
-        hint="Used in your dashboard greeting. Saved on this device until accounts are available. Leave blank to remove."
+        hint={
+          mode === "account"
+            ? "Used in your greeting. Saved to your LevelUp account, so it follows you to every device."
+            : "Used in your dashboard greeting. Saved on this device. Leave blank to remove."
+        }
         error={state.status === "error" ? state.message : undefined}
       />
       <div className="flex flex-wrap items-center gap-3">

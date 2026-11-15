@@ -1,7 +1,7 @@
-import { describeSupabaseProject } from "@levelup/supabase";
+import { describeSupabaseProject, updateProfileDisplayName } from "@levelup/supabase";
 import { DISPLAY_NAME_MAX_LENGTH, normalizeDisplayName } from "@levelup/utils";
 import Constants from "expo-constants";
-import { CircleCheck } from "lucide-react-native";
+import { CircleCheck, LogOut } from "lucide-react-native";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -10,9 +10,10 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { TextField } from "@/components/ui/text-field";
 import { AppText } from "@/components/ui/text";
-import { supabaseConfig } from "@/lib/supabase";
+import { TextField } from "@/components/ui/text-field";
+import { supabase, supabaseConfig } from "@/lib/supabase";
+import { useAuth } from "@/providers/auth";
 import { usePreferences } from "@/providers/preferences";
 import { useViewer } from "@/providers/viewer";
 import { useTheme } from "@/theme/use-theme";
@@ -30,13 +31,19 @@ function SectionTitle({ title, description }: { title: string; description: stri
   );
 }
 
-function PreferredNameForm() {
+type Status = { kind: "idle" | "saved" | "error"; message?: string };
+
+/**
+ * Signed in: saves the name to the LevelUp account (`public.profiles`).
+ * Accounts off (no Supabase): saves it on this device.
+ */
+function NameForm({ initialName }: { initialName: string | null }) {
   const { colors } = useTheme();
-  const { preferredName, setPreferredName } = usePreferences();
-  const [value, setValue] = useState(preferredName ?? "");
-  const [status, setStatus] = useState<{ kind: "idle" | "saved" | "error"; message?: string }>({
-    kind: "idle",
-  });
+  const { session } = useAuth();
+  const { setPreferredName } = usePreferences();
+  const { isAuthenticated, refreshProfile } = useViewer();
+  const [value, setValue] = useState(initialName ?? "");
+  const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [saving, setSaving] = useState(false);
 
   async function save() {
@@ -47,21 +54,32 @@ function PreferredNameForm() {
       });
       return;
     }
-    setSaving(true);
     const name = normalizeDisplayName(value);
-    await setPreferredName(name);
-    setValue(name ?? "");
-    setSaving(false);
-    setStatus({
-      kind: "saved",
-      message: name ? `Saved. We'll call you ${name}.` : "Name removed.",
-    });
+    setSaving(true);
+    try {
+      if (isAuthenticated && supabase && session) {
+        await updateProfileDisplayName(supabase, session.user.id, name);
+        await refreshProfile();
+      } else {
+        await setPreferredName(name);
+      }
+      setValue(name ?? "");
+      setStatus({
+        kind: "saved",
+        message: name ? `Saved. We'll call you ${name}.` : "Name removed.",
+      });
+    } catch (error) {
+      console.warn("[settings] Failed to save name", error);
+      setStatus({ kind: "error", message: "We couldn't save your name. Please try again." });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <View style={styles.form}>
       <TextField
-        label="Preferred name"
+        label="Your name"
         value={value}
         onChangeText={(text) => {
           setValue(text);
@@ -74,7 +92,11 @@ function PreferredNameForm() {
         returnKeyType="done"
         maxLength={DISPLAY_NAME_MAX_LENGTH}
         onSubmitEditing={() => void save()}
-        hint="Used in your dashboard greeting. Saved on this device until accounts are available. Leave blank to remove."
+        hint={
+          isAuthenticated
+            ? "Used in your greeting. Saved to your LevelUp account, so it follows you to every device."
+            : "Used in your dashboard greeting. Saved on this device. Leave blank to remove."
+        }
         error={status.kind === "error" ? status.message : undefined}
       />
       <View style={styles.formActions}>
@@ -95,12 +117,25 @@ function PreferredNameForm() {
 export default function SettingsScreen() {
   const { colors } = useTheme();
   const viewer = useViewer();
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function signOut() {
+    if (!supabase) return;
+    setSigningOut(true);
+    // Navigation switches to the sign-in screen when the session ends.
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.warn("[settings] Sign-out failed", error);
+      setSigningOut(false);
+    }
+  }
 
   return (
     <Screen kind="stack">
       <Card style={styles.section}>
         <SectionTitle title="Profile" description="How LevelUp greets you" />
-        <PreferredNameForm />
+        {/* Re-initialise when the profile name arrives from the server. */}
+        <NameForm key={viewer.displayName ?? ""} initialName={viewer.displayName} />
       </Card>
 
       <Card style={styles.section}>
@@ -112,7 +147,7 @@ export default function SettingsScreen() {
       </Card>
 
       <Card style={styles.section}>
-        <SectionTitle title="Account & sync" description="Backend connection for this build" />
+        <SectionTitle title="Account & sync" description="Your account and backend connection" />
         <View style={styles.row}>
           <AppText variant="body-sm" tone="muted">
             Supabase
@@ -128,17 +163,27 @@ export default function SettingsScreen() {
         </View>
         <View style={styles.row}>
           <AppText variant="body-sm" tone="muted">
-            Session
+            Signed in as
           </AppText>
-          <AppText variant="body-sm">
-            {viewer.isAuthenticated ? "Signed in" : "Not signed in"}
+          <AppText variant="body-sm" numberOfLines={1} style={styles.email}>
+            {viewer.isAuthenticated ? (viewer.email ?? "Your account") : "Not signed in"}
           </AppText>
         </View>
+        {viewer.isAuthenticated ? (
+          <Button
+            label="Sign out"
+            variant="outline"
+            size="sm"
+            icon={LogOut}
+            loading={signingOut}
+            onPress={() => void signOut()}
+          />
+        ) : null}
         {!supabaseConfig ? (
           <View style={[styles.note, { backgroundColor: colors.surfaceMuted }]}>
             <AppText variant="body-sm" tone="muted">
               Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY to
-              apps/mobile/.env, then restart Expo. Sign-in arrives with the accounts milestone.
+              apps/mobile/.env, then restart Expo to enable accounts.
             </AppText>
           </View>
         ) : null}
@@ -159,6 +204,7 @@ const styles = StyleSheet.create({
   saved: { flexDirection: "row", alignItems: "center", gap: 6 },
   savedText: { flex: 1 },
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  email: { flexShrink: 1, textAlign: "right" },
   note: { borderRadius: 12, padding: 12 },
   version: { textAlign: "center", marginTop: 8 },
 });

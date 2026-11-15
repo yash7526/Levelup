@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect, useMemo } from "react";
 
+import { AuthProvider, useAuth } from "@/providers/auth";
 import { PreferencesProvider, usePreferences } from "@/providers/preferences";
 import { ViewerProvider } from "@/providers/viewer";
 import { fontAssets } from "@/theme/fonts";
@@ -23,18 +24,25 @@ export default function RootLayout() {
 
   return (
     <PreferencesProvider>
-      <ViewerProvider>
-        {/* If fonts fail to load, continue with system fonts rather than blocking. */}
-        <RootNavigator fontsReady={fontsLoaded || fontError !== null} />
-      </ViewerProvider>
+      <AuthProvider>
+        <ViewerProvider>
+          {/* If fonts fail to load, continue with system fonts rather than blocking. */}
+          <RootNavigator fontsReady={fontsLoaded || fontError !== null} />
+        </ViewerProvider>
+      </AuthProvider>
     </PreferencesProvider>
   );
 }
 
 function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const { ready: preferencesReady } = usePreferences();
+  const auth = useAuth();
   const theme = useTheme();
-  const appReady = fontsReady && preferencesReady;
+  // Also wait for the stored session, so signed-in users never glimpse the sign-in screen.
+  const appReady = fontsReady && preferencesReady && auth.ready;
+  // Without Supabase the app runs without accounts. During a password reset the user is
+  // already signed in but stays on the account screens until the new password is saved.
+  const inApp = !auth.enabled || (auth.session !== null && !auth.recovering);
 
   // Root view colour shows behind screens during transitions and the keyboard.
   useEffect(() => {
@@ -76,10 +84,17 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
           contentStyle: { backgroundColor: theme.colors.background },
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="learning" options={{ title: "Learning" }} />
-        <Stack.Screen name="coach" options={{ title: "AI Coach" }} />
-        <Stack.Screen name="settings" options={{ title: "Settings" }} />
+        {/* The app: only for signed-in users (or everyone when accounts are off). */}
+        <Stack.Protected guard={inApp} redirectTo="/sign-in">
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="learning" options={{ title: "Learning" }} />
+          <Stack.Screen name="coach" options={{ title: "AI Coach" }} />
+          <Stack.Screen name="settings" options={{ title: "Settings" }} />
+        </Stack.Protected>
+        {/* Account screens: only while signed out. */}
+        <Stack.Protected guard={!inApp} redirectTo="/">
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        </Stack.Protected>
         <Stack.Screen name="+not-found" options={{ title: "Not found" }} />
       </Stack>
     </ThemeProvider>

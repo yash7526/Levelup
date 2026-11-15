@@ -379,7 +379,42 @@ To regenerate types after schema changes:
 pnpm dlx supabase gen types typescript --linked > packages/supabase/src/database.types.ts
 ```
 
-Sign-in/sign-up UI is not part of this milestone.
+### Accounts
+
+When Supabase is configured, both apps require an account. Without Supabase they run with
+no sign-in, and the greeting name is stored on the device.
+
+| Flow            | Web route                                                    | Mobile screen                        |
+| --------------- | ------------------------------------------------------------ | ------------------------------------ |
+| Sign in         | `/sign-in` (returns you to `?next=` after)                   | `sign-in`                            |
+| Sign up         | `/sign-up` → `/verify` (6-digit email code)                  | `sign-up` → `verify`                 |
+| Forgot password | `/forgot-password` → `/reset-password` (code + new password) | `forgot-password` → `reset-password` |
+| Sign out        | Sidebar and Settings                                         | Settings                             |
+
+**Email codes, not links.** Confirmation and password-reset emails contain a one-time code
+that's typed into the app. Codes work the same on web and phone, need no deep links, and work
+when the email is opened on a different device. Supabase's default templates send links, so
+**edit two templates** in the dashboard (**Authentication → Emails**) to include `{{ .Token }}`:
+
+- **Confirm signup:** e.g. `Your LevelUp confirmation code is <strong>{{ .Token }}</strong>`
+- **Reset password:** e.g. `Your LevelUp password reset code is <strong>{{ .Token }}</strong>`
+
+**Protection, three layers deep:**
+
+1. `src/proxy.ts` redirects signed-out visitors to sign-in (fast, cookie-based).
+2. The `(app)` layout re-checks the session on the server.
+3. Row-level security in Postgres guards the data itself.
+
+On mobile, `Stack.Protected` in `src/app/_layout.tsx` swaps between the account screens and
+the app based on the session.
+
+Shared logic lives in `@levelup/supabase` (`auth.ts`): input validation (8–72 character
+passwords), friendly error messages for every Supabase error code, and detection of sign-ups
+with an already-registered email (Supabase hides those on purpose to prevent account
+enumeration).
+
+> Supabase's built-in email sender is for development: it's limited to a few emails per hour.
+> Configure a custom SMTP provider (Authentication → Emails → SMTP) before inviting real users.
 
 ## Code quality
 

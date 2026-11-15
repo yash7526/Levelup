@@ -7,35 +7,52 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 
 import { PREFERRED_NAME_COOKIE } from "./preferences";
+import { getSupabaseConfig } from "./supabase/config";
 import { createSupabaseServerClient } from "./supabase/server";
+
+/** Accounts are on whenever Supabase is configured; otherwise the app runs without them. */
+export function isAuthEnabled(): boolean {
+  return getSupabaseConfig() !== null;
+}
 
 /**
  * Resolves who is using the app for this request (deduplicated per render).
  *
- * - Signed in with Supabase → name from `public.profiles`, falling back to the local name.
- * - Otherwise → the preferred name saved on this device in Settings, if any.
+ * - Accounts enabled → the signed-in user (name from `public.profiles`, falling back to the
+ *   name given at sign-up), or a signed-out viewer.
+ * - Accounts disabled (no Supabase) → a local viewer named in Settings on this device.
  */
 export const getViewer = cache(async (): Promise<Viewer> => {
-  const cookieStore = await cookies();
-  const localName = normalizeDisplayName(cookieStore.get(PREFERRED_NAME_COOKIE)?.value);
-
   const supabase = await createSupabaseServerClient();
-  if (supabase) {
-    try {
-      const { data } = await supabase.auth.getClaims();
-      const userId = data?.claims.sub;
-      if (userId) {
-        const profile = await fetchProfile(supabase, userId);
-        return {
-          isAuthenticated: true,
-          displayName: normalizeDisplayName(profile?.displayName) ?? localName,
-        };
-      }
-    } catch (error) {
-      // A Supabase outage must never take the app down; fall back to local data.
-      console.error("[viewer] Failed to resolve Supabase session", error);
-    }
+
+  if (!supabase) {
+    const cookieStore = await cookies();
+    return {
+      isAuthenticated: false,
+      email: null,
+      displayName: normalizeDisplayName(cookieStore.get(PREFERRED_NAME_COOKIE)?.value),
+    };
   }
 
-  return { isAuthenticated: false, displayName: localName };
+  try {
+    const { data } = await supabase.auth.getClaims();
+    const claims = data?.claims;
+    if (claims?.sub) {
+      const profile = await fetchProfile(supabase, claims.sub);
+      const signUpName =
+        typeof claims.user_metadata?.display_name === "string"
+          ? claims.user_metadata.display_name
+          : null;
+      return {
+        isAuthenticated: true,
+        email: typeof claims.email === "string" ? claims.email : null,
+        displayName: normalizeDisplayName(profile?.displayName ?? signUpName),
+      };
+    }
+  } catch (error) {
+    // A Supabase outage must not crash rendering; the viewer is treated as signed out.
+    console.error("[viewer] Failed to resolve Supabase session", error);
+  }
+
+  return { isAuthenticated: false, email: null, displayName: null };
 });
