@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "LevelUp Expo (React Native) app",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "lib": ["DOM", "ESNext"],
+    "target": "ESNext",
+    "module": "Preserve",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "customConditions": ["react-native"]
+  }
+}

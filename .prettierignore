@@ -1,0 +1,9 @@
+node_modules
+pnpm-lock.yaml
+.next
+.turbo
+dist
+coverage
+next-env.d.ts
+packages/tokens/generated
+apps/mobile/tsconfig.json

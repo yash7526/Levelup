@@ -1,0 +1,55 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output
+.next
+out
+dist
+build
+*.tsbuildinfo
+next-env.d.ts
+
+# Turborepo
+.turbo
+
+# Tests
+coverage
+
+# Environment — never commit real secrets
+.env
+.env.*
+!.env.example
+
+# Platform
+.vercel
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editors (shared settings are committed)
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea
+
+# Expo / React Native
+.expo
+expo-env.d.ts
+apps/mobile/android
+apps/mobile/ios
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.keystore
+!debug.keystore
+
+# Supabase local dev
+supabase/.branches
+supabase/.temp

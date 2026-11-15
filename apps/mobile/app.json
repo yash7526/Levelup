@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "LevelUp",
+    "slug": "levelup",
+    "scheme": "levelup",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#F7F7F4",
+    "ios": {
+      "bundleIdentifier": "app.levelup.mobile",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "app.levelup.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#183C32"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "./plugins/with-cmake-object-path-max",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 120,
+          "resizeMode": "contain",
+          "backgroundColor": "#F7F7F4",
+          "dark": {
+            "image": "./assets/images/splash-icon.png",
+            "backgroundColor": "#0E1210"
+          }
+        }
+      ]
+    ]
+  }
+}

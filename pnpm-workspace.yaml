@@ -1,0 +1,17 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Flat ("hoisted") node_modules instead of pnpm's nested virtual store.
+# React Native's native Android build (CMake/Ninja) fails on Windows when paths exceed
+# 260 characters, and pnpm's nested store pushed library sources to ~280 and build files
+# to ~340. Hoisted keeps them under ~215. This is Expo's documented fallback for pnpm
+# monorepos: https://docs.expo.dev/guides/monorepos/
+nodeLinker: hoisted
+
+# pnpm 10 blocks dependency lifecycle scripts by default.
+# Only these packages are allowed to run install scripts.
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver

@@ -1,0 +1,32 @@
+{
+  "name": "levelup",
+  "private": true,
+  "description": "LevelUp — a premium personal growth platform for Android, iOS and Web.",
+  "packageManager": "pnpm@10.34.9",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:web": "pnpm --filter @levelup/web dev",
+    "dev:mobile": "pnpm --filter @levelup/mobile start",
+    "android": "pnpm --filter @levelup/mobile android",
+    "build:apk": "pnpm --filter @levelup/mobile build:apk",
+    "tokens": "pnpm --filter @levelup/tokens generate",
+    "build": "turbo run build",
+    "start": "pnpm --filter @levelup/web start",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "turbo run typecheck lint test && prettier --check .",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "turbo": "^2.11.10",
+    "typescript": "~6.0.3"
+  }
+}

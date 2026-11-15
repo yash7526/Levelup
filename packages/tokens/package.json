@@ -1,0 +1,29 @@
+{
+  "name": "@levelup/tokens",
+  "version": "0.0.0",
+  "private": true,
+  "description": "LevelUp design tokens: platform-agnostic values plus a generated CSS theme for Tailwind CSS v4.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens.css": "./generated/tokens.css"
+  },
+  "scripts": {
+    "generate": "tsx scripts/generate-css.ts",
+    "dev": "tsx watch --clear-screen=false scripts/generate-css.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@levelup/eslint-config": "workspace:*",
+    "@levelup/typescript-config": "workspace:*",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.39.5",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.7",
+    "vitest": "^5.1.0"
+  }
+}
