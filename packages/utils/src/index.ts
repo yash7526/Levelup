@@ -86,3 +86,4 @@ export {
   prioritiesForDay,
   summarizeActiveHabits,
 } from "./growth-overview";
+export { buildCoachReport, buildWeekReview, MAX_COACH_INSIGHTS } from "./coach";

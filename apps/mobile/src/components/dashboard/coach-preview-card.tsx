@@ -3,7 +3,6 @@ import { coachCapabilities } from "@levelup/utils";
 import { ArrowRight, Lightbulb, Sparkles } from "lucide-react-native";
 import { StyleSheet, View } from "react-native";
 
-import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { AppText } from "@/components/ui/text";
 import { useTheme } from "@/theme/use-theme";
@@ -24,7 +23,6 @@ export function CoachPreviewCard({
       title="AI Coach"
       description="Personal guidance, grounded in your progress"
       isDemo={isDemo}
-      badge={<Badge label="Coming soon" variant="accent" />}
     >
       <View style={styles.body}>
         {insight ? (
@@ -64,7 +62,7 @@ export function CoachPreviewCard({
         )}
         <ButtonLink
           href="/coach"
-          label="Meet your coach"
+          label="Open the coach"
           variant="outline"
           size="sm"
           icon={ArrowRight}

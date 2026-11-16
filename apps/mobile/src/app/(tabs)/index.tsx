@@ -1,6 +1,5 @@
 import {
-  dashboardGoals,
-  dashboardLearning,
+  buildDashboardSnapshot,
   demoDashboard,
   emptyDashboard,
   summarizeTodayProgress,
@@ -30,14 +29,10 @@ export default function DashboardScreen() {
   const demoEnabled = isDemoDataEnabled();
   const [showSample, setShowSample] = useState(false);
 
-  // Priorities, habits, weekly activity, goals and learning are live; only the coach stays
-  // empty until its module exists. Sample data only on explicit request, always labelled.
-  const live = growth.snapshot
-    ? {
-        ...growth.snapshot,
-        goals: planning.data ? dashboardGoals(planning.data) : [],
-        learning: planning.data ? dashboardLearning(planning.data) : [],
-      }
+  // Everything is live, including the coach's top insight. Sample data only on explicit
+  // request, always labelled.
+  const live = growth.data
+    ? buildDashboardSnapshot(growth.data, growth.toLocalDay, planning.data)
     : emptyDashboard;
   const snapshot = demoEnabled && showSample ? demoDashboard : live;
   const isDemo = snapshot.source === "demo";

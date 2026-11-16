@@ -11,6 +11,7 @@ import type {
 
 import { isoWeekday, startOfIsoWeek } from "./dates";
 import { summarizeHabits } from "./habits";
+import { buildCoachReport } from "./coach";
 import { dashboardGoals, dashboardLearning } from "./planning";
 
 /** Today's priorities in slot order. */
@@ -52,8 +53,8 @@ export function summarizeActiveHabits(
 }
 
 /**
- * The live dashboard from real priorities, habits, goals and learning. The coach stays
- * empty until its module exists.
+ * The live dashboard from real priorities, habits, goals and learning, plus the coach's
+ * top insight.
  */
 export function buildDashboardSnapshot(
   data: GrowthData,
@@ -85,6 +86,6 @@ export function buildDashboardSnapshot(
     goals: planning ? dashboardGoals(planning) : [],
     learning: planning ? dashboardLearning(planning) : [],
     weeklyActivity,
-    coachInsight: null,
+    coachInsight: buildCoachReport(data, planning, toLocalDay).insight,
   };
 }

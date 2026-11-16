@@ -292,7 +292,8 @@ describe("live overview", () => {
     expect(snapshot.habits[0]?.currentStreak).toBe(1);
     expect(snapshot.weeklyActivity?.completions).toEqual([3, 1, 0, 0, 0, 0, 0]);
     expect(snapshot.goals).toEqual([]);
-    expect(snapshot.coachInsight).toBeNull();
+    // The coach reads the same data: this habit was missed on most days this week.
+    expect(snapshot.coachInsight?.id).toBe("slipping:read");
   });
 
   it("shows no weekly activity when nothing is tracked yet", () => {

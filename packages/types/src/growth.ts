@@ -149,10 +149,37 @@ export interface WeeklyActivity {
   completions: readonly number[];
 }
 
+/** Where a coach insight points the person next. */
+export type CoachFocus = "today" | "habits" | "goals" | "learning";
+
 export interface CoachInsight {
   id: Id;
   /** Observation about the person's recent activity. */
   message: string;
   /** A single, concrete next step. */
   suggestion: string | null;
+  /** `celebrate` for wins, `nudge` for something needing attention, `info` otherwise. */
+  tone?: "celebrate" | "nudge" | "info";
+  /** The module where the suggestion can be acted on. */
+  focus?: CoachFocus;
+}
+
+/** This week so far, Monday through today, from the person's own records. */
+export interface WeekReview {
+  priorities: Fraction;
+  /** Habit check-ins logged this week. */
+  habitCheckins: number;
+  /** Habits scheduled on days so far this week, and how many of those were done. */
+  habitDays: Fraction;
+  learningMinutes: number;
+  milestonesCompleted: number;
+}
+
+/** Everything the coach has to say, computed on-device from real data. */
+export interface CoachReport {
+  /** The most important insight, or `null` when there is nothing to base one on. */
+  insight: CoachInsight | null;
+  /** Ranked, most important first (includes `insight`). */
+  insights: readonly CoachInsight[];
+  week: WeekReview;
 }

@@ -2,7 +2,6 @@ import type { CoachInsight } from "@levelup/types";
 import { coachCapabilities as capabilities } from "@levelup/utils";
 import { ArrowRight, Lightbulb, Sparkles } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 
 import { DashboardCard } from "./dashboard-card";
@@ -20,7 +19,6 @@ export function CoachPreviewCard({ insight, isDemo, className }: CoachPreviewCar
       title="AI Coach"
       description="Personal guidance, grounded in your progress"
       isDemo={isDemo}
-      action={isDemo ? undefined : <Badge variant="accent">Coming soon</Badge>}
       className={className}
     >
       <div className="flex flex-1 flex-col gap-4">
@@ -59,7 +57,7 @@ export function CoachPreviewCard({ insight, isDemo, className }: CoachPreviewCar
           </ul>
         )}
         <ButtonLink href="/coach" variant="outline" size="sm" className="mt-auto self-start">
-          Meet your coach
+          Open the coach
           <ArrowRight aria-hidden="true" />
         </ButtonLink>
       </div>

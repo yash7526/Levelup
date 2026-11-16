@@ -427,6 +427,24 @@ read the same rows).
   (`goals.ts`, `learning.ts`), shared by both apps and unit-tested. The mobile target date is a
   `YYYY-MM-DD` text field, to avoid adding a native date-picker dependency.
 
+### AI Coach
+
+The coach is a **transparent rules engine, not a language model**. It reads the signed-in
+user's own habits, goals, learning and priorities and produces ranked insights; every message
+states the numbers it rests on, nothing is invented, and no data leaves the account. With no
+data it points to a first step instead of fabricating insight.
+
+- **Rules:** a long habit streak still open today; a times-a-week habit that can't be caught
+  up; overdue or soon-due goals; goals with no milestones; no priorities chosen; stale unfinished
+  priorities; a habit missed three or more times this week; learning that has gone quiet. Wins are
+  celebrated too (streaks, all priorities done, milestones reached, study streak). The most
+  important insight appears on the dashboard; the Coach page shows up to six, a "this week so far"
+  summary and a note on how it works.
+- **Where it lives:** `packages/utils/src/coach.ts` (shared by web and mobile, unit-tested).
+- **Why no LLM:** it needs no API key, works offline and is always explainable. `buildCoachReport`
+  is the seam to put a language model behind later, for example by sending only this report.
+- The module keeps the name "AI Coach" in navigation; the page says plainly how it works.
+
 ### Accounts
 
 When Supabase is configured, both apps require an account. Without Supabase they run with
@@ -621,5 +639,5 @@ pnpm --filter @levelup/mobile doctor           # Expo's dependency and config ch
 3. ✅ **Accounts**: Supabase Auth (email), profile editing synced to `profiles`, on both apps
 4. ✅ **Today & Habits**: priorities, habit tracking, streaks; live dashboard data
 5. ✅ **Goals & Learning**: milestones, library, sessions (linking habits to goals still to come)
-6. AI Coach: insights and weekly reflection
+6. ✅ **AI Coach**: rules-based insights and a weekly summary (no LLM; see above)
 7. Store release: EAS production builds, Play Store / App Store listings
