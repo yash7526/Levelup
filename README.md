@@ -380,6 +380,12 @@ composite foreign key stops a check-in from pointing at someone else's habit. **
 in the Supabase SQL editor** before using Today and Habits; until then both apps show a message
 asking you to.
 
+`20261116000000_create_goals_and_learning.sql` adds `goals` and `goal_milestones` (progress is
+derived from milestones), `learning_items` (progress in lessons, chapters, pages or modules) and
+`learning_sessions`. Same owner-only RLS and composite foreign keys. **Run it in the Supabase SQL
+editor** before using Goals and Learning; until then those screens, and the dashboard's goals and
+learning cards, say so instead of showing empty data.
+
 To regenerate types after schema changes:
 
 ```bash
@@ -403,6 +409,23 @@ read the same rows).
   and the coach stay empty until their modules exist. Sample data is still opt-in and labelled.
 - **Logic lives in `@levelup/utils`** (dates, schedules, streaks, validation) and the queries in
   `@levelup/supabase`, so both apps share it and it is unit-tested.
+
+### Goals & Learning
+
+- **Goals:** a title, optional area and target date, and a status of active, paused or
+  completed. Progress is milestones done out of total, never a typed-in percentage, up to 30
+  milestones per goal. Target dates show days left or days overdue.
+- **Learning:** a library of courses, books, skills and articles, each measured in lessons,
+  chapters, pages or modules. Step progress up or down, log sessions (minutes plus an optional
+  takeaway note), and see this week's minutes and your study streak. Items can be archived and
+  restored.
+- **Dashboard:** active goals (nearest target first) and in-progress learning are live. If they
+  can't be loaded the dashboard says so rather than showing them as empty.
+- **Not built yet:** linking habits and priorities to goals (listed under planned
+  capabilities), and a notes library beyond session takeaways.
+- **Logic** lives in `@levelup/utils` (`planning.ts`) and queries in `@levelup/supabase`
+  (`goals.ts`, `learning.ts`), shared by both apps and unit-tested. The mobile target date is a
+  `YYYY-MM-DD` text field, to avoid adding a native date-picker dependency.
 
 ### Accounts
 
@@ -597,6 +620,6 @@ pnpm --filter @levelup/mobile doctor           # Expo's dependency and config ch
 2. ✅ **Mobile app foundation**: Expo app for Android and iOS on the shared packages
 3. ✅ **Accounts**: Supabase Auth (email), profile editing synced to `profiles`, on both apps
 4. ✅ **Today & Habits**: priorities, habit tracking, streaks; live dashboard data
-5. Goals & Learning: milestones, library, sessions
+5. ✅ **Goals & Learning**: milestones, library, sessions (linking habits to goals still to come)
 6. AI Coach: insights and weekly reflection
 7. Store release: EAS production builds, Play Store / App Store listings

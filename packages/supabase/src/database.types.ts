@@ -146,6 +146,160 @@ export interface Database {
           },
         ];
       };
+      goals: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          area: string | null;
+          status: string;
+          target_date: string | null;
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          title: string;
+          area?: string | null;
+          status?: string;
+          target_date?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          area?: string | null;
+          status?: string;
+          target_date?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      goal_milestones: {
+        Row: {
+          id: string;
+          user_id: string;
+          goal_id: string;
+          title: string;
+          position: number;
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          goal_id: string;
+          title: string;
+          position?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          goal_id?: string;
+          title?: string;
+          position?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "goal_milestones_goal_id_user_id_fkey";
+            columns: ["goal_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "goals";
+            referencedColumns: ["id", "user_id"];
+          },
+        ];
+      };
+      learning_items: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          kind: string;
+          unit: string;
+          total: number;
+          completed: number;
+          archived_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          title: string;
+          kind: string;
+          unit: string;
+          total: number;
+          completed?: number;
+          archived_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          kind?: string;
+          unit?: string;
+          total?: number;
+          completed?: number;
+          archived_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      learning_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          item_id: string;
+          day: string;
+          minutes: number;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          item_id: string;
+          day: string;
+          minutes: number;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          item_id?: string;
+          day?: string;
+          minutes?: number;
+          note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "learning_sessions_item_id_user_id_fkey";
+            columns: ["item_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "learning_items";
+            referencedColumns: ["id", "user_id"];
+          },
+        ];
+      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };

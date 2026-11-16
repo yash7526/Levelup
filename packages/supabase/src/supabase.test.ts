@@ -4,7 +4,11 @@ import {
   describeDataError,
   describeSupabaseProject,
   LevelUpDataError,
+  mapGoalRow,
   mapHabitRow,
+  mapLearningItemRow,
+  mapLearningSessionRow,
+  mapMilestoneRow,
   mapPriorityRow,
   mapProfileRow,
   parseSupabaseConfig,
@@ -112,5 +116,58 @@ describe("Today & Habits rows", () => {
     );
     expect(describeDataError(new LevelUpDataError("failed", "SQL: boom"), fallback)).toBe(fallback);
     expect(describeDataError(new Error("network"), fallback)).toBe(fallback);
+  });
+});
+
+describe("Goals & Learning rows", () => {
+  it("maps goals with milestones in order and tolerates unknown values", () => {
+    const goal = mapGoalRow(
+      {
+        id: "g1",
+        title: "Run 10k",
+        area: "unknown",
+        status: "weird",
+        target_date: "2027-01-01",
+        completed_at: null,
+        created_at: "2026-11-01T00:00:00Z",
+      },
+      [
+        mapMilestoneRow({
+          id: "m2",
+          goal_id: "g1",
+          title: "Second",
+          position: 1,
+          completed_at: null,
+        }),
+        mapMilestoneRow({
+          id: "m1",
+          goal_id: "g1",
+          title: "First",
+          position: 0,
+          completed_at: "2026-11-05T00:00:00Z",
+        }),
+      ],
+    );
+    expect(goal.status).toBe("active");
+    expect(goal.area).toBeNull();
+    expect(goal.milestones.map((m) => m.id)).toEqual(["m1", "m2"]);
+    expect(goal.milestones[0]?.completedAt).toBe("2026-11-05T00:00:00Z");
+  });
+
+  it("maps learning items and clamps progress to the total", () => {
+    const item = mapLearningItemRow({
+      id: "i1",
+      title: "Book",
+      kind: "book",
+      unit: "pages",
+      total: 300,
+      completed: 999,
+      created_at: "2026-11-01T00:00:00Z",
+      archived_at: null,
+    });
+    expect(item).toMatchObject({ kind: "book", unit: "pages", total: 300, completed: 300 });
+    expect(
+      mapLearningSessionRow({ id: "s", item_id: "i1", day: "2026-11-16", minutes: 25, note: null }),
+    ).toEqual({ id: "s", itemId: "i1", day: "2026-11-16", minutes: 25, note: null });
   });
 });

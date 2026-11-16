@@ -1,7 +1,12 @@
 import "server-only";
 
-import { describeDataError, type LevelUpSupabaseClient, loadGrowthData } from "@levelup/supabase";
-import type { GrowthData, ISODateString } from "@levelup/types";
+import {
+  describeDataError,
+  type LevelUpSupabaseClient,
+  loadGrowthData,
+  loadPlanningData,
+} from "@levelup/supabase";
+import type { GrowthData, ISODateString, PlanningData } from "@levelup/types";
 import { isValidTimeZone, localDateInTimeZone } from "@levelup/utils";
 import { cookies } from "next/headers";
 import { cache } from "react";
@@ -62,6 +67,24 @@ export const getGrowthData = cache(async (context: GrowthContext): Promise<Growt
       message: describeDataError(
         error,
         "We couldn't load your priorities and habits. Check your connection and try again.",
+      ),
+    };
+  }
+});
+
+export type PlanningLoad = { ok: true; data: PlanningData } | { ok: false; message: string };
+
+/** The viewer's Goals and Learning data (deduplicated per request); failures become a message. */
+export const getPlanningData = cache(async (context: GrowthContext): Promise<PlanningLoad> => {
+  try {
+    return { ok: true, data: await loadPlanningData(context.supabase, context.today) };
+  } catch (error) {
+    console.error("[planning] Failed to load Goals and Learning data", error);
+    return {
+      ok: false,
+      message: describeDataError(
+        error,
+        "We couldn't load your goals and learning. Check your connection and try again.",
       ),
     };
   }

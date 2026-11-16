@@ -79,6 +79,27 @@ export interface HabitSummary {
 
 export type GoalStatus = "active" | "paused" | "completed";
 
+export interface GoalMilestone {
+  id: Id;
+  goalId: Id;
+  title: string;
+  /** Order within the goal, starting at 0. */
+  position: number;
+  completedAt: ISODateTimeString | null;
+}
+
+/** A stored goal with its milestones in order. */
+export interface Goal {
+  id: Id;
+  title: string;
+  area: LifeArea | null;
+  status: GoalStatus;
+  targetDate: ISODateString | null;
+  completedAt: ISODateTimeString | null;
+  createdAt: ISODateTimeString;
+  milestones: readonly GoalMilestone[];
+}
+
 export interface GoalSummary {
   id: Id;
   title: string;
@@ -91,6 +112,26 @@ export interface GoalSummary {
 
 export type LearningKind = "course" | "book" | "skill" | "article";
 export type LearningUnit = "lessons" | "chapters" | "pages" | "modules";
+
+/** A stored learning item. */
+export interface LearningItem {
+  id: Id;
+  title: string;
+  kind: LearningKind;
+  unit: LearningUnit;
+  total: number;
+  completed: number;
+  createdAt: ISODateTimeString;
+  archivedAt: ISODateTimeString | null;
+}
+
+export interface LearningSession {
+  id: Id;
+  itemId: Id;
+  day: ISODateString;
+  minutes: number;
+  note: string | null;
+}
 
 export interface LearningItemSummary {
   id: Id;

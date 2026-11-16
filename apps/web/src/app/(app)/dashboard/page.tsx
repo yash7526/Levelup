@@ -11,6 +11,7 @@ import { PrioritiesCard } from "@/components/dashboard/priorities-card";
 import { TodayProgressCard } from "@/components/dashboard/today-progress-card";
 import { WeeklyActivityCard } from "@/components/dashboard/weekly-activity-card";
 import { GrowthLoadError } from "@/components/growth/load-error";
+import { PlanningNotice } from "@/components/growth/planning-notice";
 import { getDashboardSnapshot } from "@/lib/dashboard/get-dashboard-snapshot";
 import { isDemoDataEnabled } from "@/lib/env";
 import { getViewer } from "@/lib/viewer";
@@ -21,7 +22,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const { demo } = await searchParams;
   const demoEnabled = isDemoDataEnabled();
 
-  const [viewer, { snapshot, loadError }] = await Promise.all([
+  const [viewer, { snapshot, loadError, planningError }] = await Promise.all([
     getViewer(),
     getDashboardSnapshot({ demo: demoEnabled && demo === "1" }),
   ]);
@@ -34,6 +35,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       <DashboardHeader viewer={viewer} isDemo={isDemo} demoEnabled={demoEnabled} />
 
       {isDemo ? <DemoBanner /> : null}
+
+      {planningError && !loadError ? <PlanningNotice message={planningError} /> : null}
 
       {loadError ? (
         <GrowthLoadError message={loadError} />

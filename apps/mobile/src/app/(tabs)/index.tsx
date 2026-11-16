@@ -1,4 +1,10 @@
-import { demoDashboard, emptyDashboard, summarizeTodayProgress } from "@levelup/utils";
+import {
+  dashboardGoals,
+  dashboardLearning,
+  demoDashboard,
+  emptyDashboard,
+  summarizeTodayProgress,
+} from "@levelup/utils";
 import { useState } from "react";
 
 import { CoachPreviewCard } from "@/components/dashboard/coach-preview-card";
@@ -14,23 +20,35 @@ import { ActionError } from "@/components/growth/action-error";
 import { Screen } from "@/components/layout/screen";
 import { isDemoDataEnabled } from "@/lib/env";
 import { useGrowth } from "@/providers/growth";
+import { usePlanning } from "@/providers/planning";
 import { useViewer } from "@/providers/viewer";
 
 export default function DashboardScreen() {
   const viewer = useViewer();
   const growth = useGrowth();
+  const planning = usePlanning();
   const demoEnabled = isDemoDataEnabled();
   const [showSample, setShowSample] = useState(false);
 
-  // Priorities, habits and weekly activity are live; goals, learning and the coach stay
-  // empty until their modules exist. Sample data only on explicit request, always labelled.
-  const live = growth.snapshot ?? emptyDashboard;
+  // Priorities, habits, weekly activity, goals and learning are live; only the coach stays
+  // empty until its module exists. Sample data only on explicit request, always labelled.
+  const live = growth.snapshot
+    ? {
+        ...growth.snapshot,
+        goals: planning.data ? dashboardGoals(planning.data) : [],
+        learning: planning.data ? dashboardLearning(planning.data) : [],
+      }
+    : emptyDashboard;
   const snapshot = demoEnabled && showSample ? demoDashboard : live;
   const isDemo = snapshot.source === "demo";
   const today = summarizeTodayProgress(snapshot.priorities, snapshot.habits);
 
   return (
-    <Screen kind="tab" onRefresh={() => void growth.refresh()} refreshing={growth.refreshing}>
+    <Screen
+      kind="tab"
+      onRefresh={() => void Promise.all([growth.refresh(), planning.refresh()])}
+      refreshing={growth.refreshing || planning.refreshing}
+    >
       <DashboardHeader
         viewer={viewer}
         isDemo={isDemo}
@@ -40,6 +58,12 @@ export default function DashboardScreen() {
       {isDemo ? <DemoBanner onExit={() => setShowSample(false)} /> : null}
       {!isDemo && growth.loadError ? (
         <ActionError message={growth.loadError} onDismiss={() => undefined} />
+      ) : null}
+      {!isDemo && !growth.loadError && planning.loadError ? (
+        <ActionError
+          message={`${planning.loadError} The goals and learning cards are empty only because of this.`}
+          onDismiss={() => undefined}
+        />
       ) : null}
       <TodayProgressCard progress={today} isDemo={isDemo} />
       <PrioritiesCard priorities={snapshot.priorities} isDemo={isDemo} />

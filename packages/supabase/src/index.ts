@@ -45,3 +45,36 @@ export {
   type HabitRow,
 } from "./habits";
 export { CHECKIN_HISTORY_DAYS, loadGrowthData } from "./growth";
+export {
+  addMilestone,
+  createGoal,
+  deleteGoal,
+  deleteMilestone,
+  listGoals,
+  mapGoalRow,
+  mapMilestoneRow,
+  setGoalStatus,
+  setMilestoneDone,
+  updateGoal,
+  type GoalInput,
+  type GoalRow,
+  type MilestoneRow,
+} from "./goals";
+export {
+  createLearningItem,
+  deleteLearningSession,
+  listLearningItems,
+  listLearningSessions,
+  logLearningSession,
+  mapLearningItemRow,
+  mapLearningSessionRow,
+  SESSION_HISTORY_LIMIT,
+  setLearningArchived,
+  setLearningProgress,
+  updateLearningItem,
+  type LearningItemInput,
+  type LearningItemRow,
+  type LearningSessionRow,
+  type SessionInput,
+} from "./learning";
+export { loadPlanningData } from "./planning";

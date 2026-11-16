@@ -1,11 +1,14 @@
 import type { DataSource, ISODateString } from "./common";
 import type {
   CoachInsight,
+  Goal,
   GoalSummary,
   Habit,
   HabitCheckin,
   HabitSummary,
+  LearningItem,
   LearningItemSummary,
+  LearningSession,
   Priority,
   PriorityEntry,
   WeeklyActivity,
@@ -37,4 +40,16 @@ export interface GrowthData {
   priorities: readonly PriorityEntry[];
   /** Unfinished priorities from recent days before today, newest first. */
   carryOver: readonly PriorityEntry[];
+}
+
+/** One viewer's Goals and Learning data. */
+export interface PlanningData {
+  /** The viewer's current calendar day. */
+  today: ISODateString;
+  /** Every goal (active, paused and completed), newest first, with milestones. */
+  goals: readonly Goal[];
+  /** Every learning item, active and archived, oldest first. */
+  learning: readonly LearningItem[];
+  /** Recent sessions, newest first. */
+  sessions: readonly LearningSession[];
 }

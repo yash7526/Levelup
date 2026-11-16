@@ -3,6 +3,7 @@ import type {
   GrowthData,
   HabitSummary,
   ISODateString,
+  PlanningData,
   ISODateTimeString,
   PriorityEntry,
   WeeklyActivity,
@@ -10,6 +11,7 @@ import type {
 
 import { isoWeekday, startOfIsoWeek } from "./dates";
 import { summarizeHabits } from "./habits";
+import { dashboardGoals, dashboardLearning } from "./planning";
 
 /** Today's priorities in slot order. */
 export function prioritiesForDay(
@@ -50,12 +52,13 @@ export function summarizeActiveHabits(
 }
 
 /**
- * The live dashboard from real priorities and habits. Goals, learning and the coach
- * stay empty until their modules exist.
+ * The live dashboard from real priorities, habits, goals and learning. The coach stays
+ * empty until its module exists.
  */
 export function buildDashboardSnapshot(
   data: GrowthData,
   toLocalDay: (instant: ISODateTimeString) => ISODateString,
+  planning: PlanningData | null = null,
 ): DashboardSnapshot {
   const habits = summarizeActiveHabits(data, toLocalDay);
   const priorities = prioritiesForDay(data.priorities, data.today).map(
@@ -79,8 +82,8 @@ export function buildDashboardSnapshot(
     source: "live",
     priorities,
     habits,
-    goals: [],
-    learning: [],
+    goals: planning ? dashboardGoals(planning) : [],
+    learning: planning ? dashboardLearning(planning) : [],
     weeklyActivity,
     coachInsight: null,
   };

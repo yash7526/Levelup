@@ -7,6 +7,7 @@ import { useEffect, useMemo } from "react";
 
 import { AuthProvider, useAuth } from "@/providers/auth";
 import { GrowthProvider } from "@/providers/growth";
+import { PlanningProvider } from "@/providers/planning";
 import { PreferencesProvider, usePreferences } from "@/providers/preferences";
 import { ViewerProvider } from "@/providers/viewer";
 import { fontAssets } from "@/theme/fonts";
@@ -28,8 +29,10 @@ export default function RootLayout() {
       <AuthProvider>
         <ViewerProvider>
           <GrowthProvider>
-            {/* If fonts fail to load, continue with system fonts rather than blocking. */}
-            <RootNavigator fontsReady={fontsLoaded || fontError !== null} />
+            <PlanningProvider>
+              {/* If fonts fail to load, continue with system fonts rather than blocking. */}
+              <RootNavigator fontsReady={fontsLoaded || fontError !== null} />
+            </PlanningProvider>
           </GrowthProvider>
         </ViewerProvider>
       </AuthProvider>
