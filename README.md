@@ -373,11 +373,36 @@ Supabase is optional during development. Without it, everything degrades to empt
 **row-level security** (users can read and update only their own row), an `updated_at`
 trigger, and a trigger that creates a profile on sign-up.
 
+`20261115000000_create_today_and_habits.sql` adds `priorities` (up to three per user per day),
+`habits` (daily, specific weekdays, or N times a week; archived rather than deleted) and
+`habit_checkins` (one row per habit per completed day). Every table has owner-only RLS, and a
+composite foreign key stops a check-in from pointing at someone else's habit. **Run the migration
+in the Supabase SQL editor** before using Today and Habits; until then both apps show a message
+asking you to.
+
 To regenerate types after schema changes:
 
 ```bash
 pnpm dlx supabase gen types typescript --linked > packages/supabase/src/database.types.ts
 ```
+
+### Today & Habits
+
+Priorities, habits and the live dashboard are saved to the signed-in account (web and mobile
+read the same rows).
+
+- **Priorities:** at most three per day. Unfinished ones from the last two weeks are offered
+  under "Unfinished from earlier" and can be moved to today or removed.
+- **Habits:** schedule is daily, specific weekdays, or N times a week. Streaks count only
+  scheduled days (weeks that met the target for "N times a week"), and today never breaks a
+  streak until the day has passed. The last seven days can be ticked or unticked. Archiving
+  keeps history; archived habits can be restored.
+- **"Today" is the viewer's own day.** The web app stores the browser's time zone in a cookie
+  (`levelup-tz`) and refreshes at local midnight; the mobile app uses the device's date.
+- **Dashboard:** priorities, habits, progress and weekly activity are real. Goals, learning
+  and the coach stay empty until their modules exist. Sample data is still opt-in and labelled.
+- **Logic lives in `@levelup/utils`** (dates, schedules, streaks, validation) and the queries in
+  `@levelup/supabase`, so both apps share it and it is unit-tested.
 
 ### Accounts
 
@@ -570,8 +595,8 @@ pnpm --filter @levelup/mobile doctor           # Expo's dependency and config ch
 
 1. ✅ **Foundation & web experience**
 2. ✅ **Mobile app foundation**: Expo app for Android and iOS on the shared packages
-3. Accounts: Supabase Auth (email + OAuth), profile editing synced to `profiles`, on both apps
-4. Today & Habits: priorities, habit tracking, streaks; live dashboard data
+3. ✅ **Accounts**: Supabase Auth (email), profile editing synced to `profiles`, on both apps
+4. ✅ **Today & Habits**: priorities, habit tracking, streaks; live dashboard data
 5. Goals & Learning: milestones, library, sessions
 6. AI Coach: insights and weekly reflection
 7. Store release: EAS production builds, Play Store / App Store listings

@@ -1,7 +1,15 @@
 import "server-only";
 
 import type { DashboardSnapshot } from "@levelup/types";
-import { demoDashboard, emptyDashboard } from "@levelup/utils";
+import { buildDashboardSnapshot, demoDashboard, emptyDashboard } from "@levelup/utils";
+
+import { getGrowthContext, getGrowthData } from "@/lib/growth/context";
+
+export interface DashboardLoad {
+  snapshot: DashboardSnapshot;
+  /** Why live data couldn't be loaded; the snapshot is then empty and must not be shown as real. */
+  loadError: string | null;
+}
 
 interface Options {
   /** Explicitly requested, clearly labelled sample data. */
@@ -11,10 +19,17 @@ interface Options {
 /**
  * Loads everything the dashboard renders.
  *
- * Live data sources (priorities, habits, goals, learning, activity, coach) are added
- * by their respective module milestones. Until then the live dashboard is honestly
- * empty — no invented numbers. Sample data lives in @levelup/utils (shared with mobile).
+ * Priorities, habits and weekly activity come from the signed-in user's data. Goals,
+ * learning and the coach stay empty until their modules exist; no invented numbers.
+ * Without accounts configured, the live dashboard is empty. Sample data lives in
+ * @levelup/utils (shared with mobile).
  */
-export function getDashboardSnapshot({ demo }: Options): Promise<DashboardSnapshot> {
-  return Promise.resolve(demo ? demoDashboard : emptyDashboard);
+export async function getDashboardSnapshot({ demo }: Options): Promise<DashboardLoad> {
+  if (demo) return { snapshot: demoDashboard, loadError: null };
+  const context = await getGrowthContext();
+  if (!context) return { snapshot: emptyDashboard, loadError: null };
+  const load = await getGrowthData(context);
+  return load.ok
+    ? { snapshot: buildDashboardSnapshot(load.data, context.toLocalDay), loadError: null }
+    : { snapshot: emptyDashboard, loadError: load.message };
 }

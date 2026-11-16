@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ScrollView, StyleSheet, View, type ViewStyle } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, View, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppText } from "@/components/ui/text";
@@ -14,10 +14,19 @@ interface ScreenProps {
    */
   kind?: "tab" | "stack";
   contentStyle?: ViewStyle;
+  /** Enables pull-to-refresh. */
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
 /** Scrollable page with the app background, gutters and safe-area padding. */
-export function Screen({ children, kind = "tab", contentStyle }: ScreenProps) {
+export function Screen({
+  children,
+  kind = "tab",
+  contentStyle,
+  onRefresh,
+  refreshing = false,
+}: ScreenProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -25,6 +34,18 @@ export function Screen({ children, kind = "tab", contentStyle }: ScreenProps) {
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.background }}
       keyboardShouldPersistTaps="handled"
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+            progressBackgroundColor={colors.surface}
+            progressViewOffset={kind === "tab" ? insets.top : 0}
+          />
+        ) : undefined
+      }
       contentContainerStyle={[
         styles.content,
         {

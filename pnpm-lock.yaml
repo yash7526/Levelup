@@ -224,6 +224,9 @@ importers:
       '@levelup/types':
         specifier: workspace:*
         version: link:../types
+      '@levelup/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@supabase/supabase-js':
         specifier: ^2.119.0
         version: 2.119.0

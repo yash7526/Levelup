@@ -6,6 +6,7 @@ import * as SystemUI from "expo-system-ui";
 import { useEffect, useMemo } from "react";
 
 import { AuthProvider, useAuth } from "@/providers/auth";
+import { GrowthProvider } from "@/providers/growth";
 import { PreferencesProvider, usePreferences } from "@/providers/preferences";
 import { ViewerProvider } from "@/providers/viewer";
 import { fontAssets } from "@/theme/fonts";
@@ -26,8 +27,10 @@ export default function RootLayout() {
     <PreferencesProvider>
       <AuthProvider>
         <ViewerProvider>
-          {/* If fonts fail to load, continue with system fonts rather than blocking. */}
-          <RootNavigator fontsReady={fontsLoaded || fontError !== null} />
+          <GrowthProvider>
+            {/* If fonts fail to load, continue with system fonts rather than blocking. */}
+            <RootNavigator fontsReady={fontsLoaded || fontError !== null} />
+          </GrowthProvider>
         </ViewerProvider>
       </AuthProvider>
     </PreferencesProvider>

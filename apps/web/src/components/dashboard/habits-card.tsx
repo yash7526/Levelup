@@ -1,5 +1,5 @@
-import type { HabitSummary } from "@levelup/types";
-import { pluralize } from "@levelup/utils";
+import type { HabitDayStatus, HabitSummary } from "@levelup/types";
+import { describeStreak } from "@levelup/utils";
 import { Check, Flame, Repeat } from "lucide-react";
 
 import { ButtonLink } from "@/components/ui/button";
@@ -15,37 +15,29 @@ interface HabitsCardProps {
   className?: string;
 }
 
+const dotStyles: Record<HabitDayStatus, string> = {
+  done: "bg-primary",
+  missed: "bg-warning/45",
+  open: "bg-transparent ring-[1.5px] ring-foreground-subtle ring-inset",
+  off: "bg-primary/10",
+};
+
 /** Seven dots, oldest first; today is the last dot. */
-function RecentDays({
-  days,
-  completedToday,
-}: {
-  days: readonly boolean[];
-  completedToday: boolean;
-}) {
-  const completed = days.filter(Boolean).length;
+function RecentDays({ days }: { days: readonly HabitDayStatus[] }) {
+  const completed = days.filter((status) => status === "done").length;
   return (
     <div
       role="img"
-      aria-label={`Completed on ${completed} of the last ${days.length} days`}
+      aria-label={`Done on ${completed} of the last ${days.length} days`}
       className="hidden items-center gap-1.5 sm:flex"
     >
-      {days.map((isDone, index) => {
-        const isToday = index === days.length - 1;
-        return (
-          <span
-            // Position is the identity: the list is a fixed seven-day window.
-            key={index}
-            className={cn(
-              "size-2 rounded-full",
-              isDone ? "bg-primary" : "bg-primary/15",
-              isToday &&
-                !completedToday &&
-                "bg-transparent ring-[1.5px] ring-foreground-subtle ring-inset",
-            )}
-          />
-        );
-      })}
+      {days.map((status, index) => (
+        <span
+          // Position is the identity: the list is a fixed seven-day window.
+          key={index}
+          className={cn("size-2 rounded-full", dotStyles[status])}
+        />
+      ))}
     </div>
   );
 }
@@ -104,12 +96,10 @@ export function HabitsCard({ habits, isDemo, className }: HabitsCardProps) {
                     )}
                     aria-hidden="true"
                   />
-                  {habit.currentStreak > 0
-                    ? `${pluralize(habit.currentStreak, "day")} streak`
-                    : "No streak yet"}
+                  {describeStreak(habit)}
                 </p>
               </div>
-              <RecentDays days={habit.recentDays} completedToday={habit.completedToday} />
+              <RecentDays days={habit.recentDays} />
             </li>
           ))}
         </ul>
@@ -120,7 +110,7 @@ export function HabitsCard({ habits, isDemo, className }: HabitsCardProps) {
           description="Start with one habit small enough to do on your worst day. Consistency beats intensity."
           action={
             <ButtonLink href="/habits" variant="primary" size="sm">
-              Explore Habits
+              Create a habit
             </ButtonLink>
           }
         />

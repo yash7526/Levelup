@@ -20,3 +20,28 @@ export {
   type AuthFieldErrors,
 } from "./auth";
 export type { Database, Json, Tables, TablesInsert, TablesUpdate } from "./database.types";
+export { describeDataError, isDataError, LevelUpDataError, type DataErrorCode } from "./errors";
+export {
+  CARRY_OVER_DAYS,
+  createPriority,
+  deletePriority,
+  listCarryOverPriorities,
+  listPriorities,
+  mapPriorityRow,
+  movePriorityToDay,
+  setPriorityStatus,
+  type NewPriority,
+  type PriorityRow,
+} from "./priorities";
+export {
+  createHabit,
+  listCheckins,
+  listHabits,
+  mapHabitRow,
+  setHabitArchived,
+  setHabitCheckin,
+  updateHabit,
+  type HabitInput,
+  type HabitRow,
+} from "./habits";
+export { CHECKIN_HISTORY_DAYS, loadGrowthData } from "./growth";

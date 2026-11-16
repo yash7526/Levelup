@@ -1,5 +1,5 @@
-import type { HabitSummary } from "@levelup/types";
-import { pluralize } from "@levelup/utils";
+import type { HabitDayStatus, HabitSummary } from "@levelup/types";
+import { describeStreak } from "@levelup/utils";
 import { Check, Flame, Repeat } from "lucide-react-native";
 import { StyleSheet, View } from "react-native";
 
@@ -12,36 +12,28 @@ import { useTheme } from "@/theme/use-theme";
 import { DashboardCard } from "./dashboard-card";
 
 /** Seven dots, oldest first; the last dot is today. */
-function RecentDays({
-  days,
-  completedToday,
-}: {
-  days: readonly boolean[];
-  completedToday: boolean;
-}) {
+function RecentDays({ days }: { days: readonly HabitDayStatus[] }) {
   const { colors } = useTheme();
-  const completed = days.filter(Boolean).length;
+  const completed = days.filter((status) => status === "done").length;
   return (
     <View
       accessible
-      accessibilityLabel={`Completed on ${completed} of the last ${days.length} days`}
+      accessibilityLabel={`Done on ${completed} of the last ${days.length} days`}
       style={styles.dots}
     >
-      {days.map((isDone, index) => {
-        const pendingToday = index === days.length - 1 && !completedToday;
-        return (
-          <View
-            // Position is the identity: a fixed seven-day window.
-            key={index}
-            style={[
-              styles.dot,
-              pendingToday
-                ? { borderWidth: 1.5, borderColor: colors.foregroundSubtle }
-                : { backgroundColor: isDone ? colors.primary : alpha(colors.primary, 0.15) },
-            ]}
-          />
-        );
-      })}
+      {days.map((status, index) => (
+        <View
+          // Position is the identity: a fixed seven-day window.
+          key={index}
+          style={[
+            styles.dot,
+            status === "open" && { borderWidth: 1.5, borderColor: colors.foregroundSubtle },
+            status === "done" && { backgroundColor: colors.primary },
+            status === "missed" && { backgroundColor: alpha(colors.warning, 0.45) },
+            status === "off" && { backgroundColor: alpha(colors.primary, 0.1) },
+          ]}
+        />
+      ))}
     </View>
   );
 }
@@ -101,7 +93,7 @@ export function HabitsCard({
                     : habit.dueToday
                       ? "not done yet today"
                       : "not due today"
-                }, ${habit.currentStreak > 0 ? `${pluralize(habit.currentStreak, "day")} streak` : "no streak yet"}`}
+                }, ${describeStreak(habit).toLowerCase()}`}
               >
                 <AppText variant="label" numberOfLines={1}>
                   {habit.name}
@@ -112,13 +104,11 @@ export function HabitsCard({
                     color={habit.currentStreak > 0 ? colors.warning : colors.foregroundSubtle}
                   />
                   <AppText variant="caption" tone="muted">
-                    {habit.currentStreak > 0
-                      ? `${pluralize(habit.currentStreak, "day")} streak`
-                      : "No streak yet"}
+                    {describeStreak(habit)}
                   </AppText>
                 </View>
               </View>
-              <RecentDays days={habit.recentDays} completedToday={habit.completedToday} />
+              <RecentDays days={habit.recentDays} />
             </View>
           ))}
         </View>
@@ -127,7 +117,7 @@ export function HabitsCard({
           icon={Repeat}
           title="No habits yet"
           description="Start with one habit small enough to do on your worst day. Consistency beats intensity."
-          action={<ButtonLink href="/habits" label="Explore Habits" size="sm" />}
+          action={<ButtonLink href="/habits" label="Create a habit" size="sm" />}
         />
       )}
     </DashboardCard>

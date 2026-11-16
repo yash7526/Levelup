@@ -79,9 +79,12 @@ describe("progress", () => {
       id,
       name: id,
       area: null,
+      schedule: { type: "daily" },
       dueToday,
       completedToday,
       currentStreak: 0,
+      streakUnit: "day",
+      weekProgress: null,
       recentDays: [],
     });
     const habits = [habit("h1", true, true), habit("h2", true, false), habit("h3", false, false)];
